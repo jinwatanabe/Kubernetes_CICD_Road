@@ -50,4 +50,4 @@ ENV RAILS_ENV=production
 VOLUME /myapp/public
 VOLUME /myapp/tmp
 
-CMD /bin/sh -c "bundle exec puma -C config/puma.rb"
+# CMD /bin/sh -c "bundle exec puma -C config/puma.rb"

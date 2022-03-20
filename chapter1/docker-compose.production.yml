@@ -8,9 +8,10 @@ services:
     volumes:
       - .:/myapp
       - public-data:/myapp/public
-      - tmp-data:/myapp/tmp
+      - tmp-data:/myapp/tmp/sockets
       - log-data:/myapp/log
       - /myapp/node_modules
+    command: ['/bin/sh', '-c', 'bundle exec puma -C config/puma.rb']
     env_file:
       - .env
     depends_on:
@@ -33,9 +34,10 @@ services:
   web:
     build:
       context: containers/nginx
+    container_name: nginx
     volumes:
       - public-data:/myapp/public
-      - tmp-data:/myapp/tmp
+      - tmp-data:/myapp/tmp/sockets
     ports:
       - 80:80
     depends_on:
