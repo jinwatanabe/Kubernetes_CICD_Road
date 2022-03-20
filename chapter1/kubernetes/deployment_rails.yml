@@ -23,7 +23,6 @@ spec:
       initContainers:
       - name: pre-rails
         # image: [ECRのRailsイメージURL]
-        image: 945231564387.dkr.ecr.ap-northeast-1.amazonaws.com/sample-rails
         command: ['/bin/sh', '-c', 'cp -a /myapp/public/* /mnt/empty-dir-content/']
         volumeMounts:
           - name: public-data
@@ -32,7 +31,6 @@ spec:
       containers:
       - name: rails
         # image: [ECRのRailsイメージURL]
-        image: 945231564387.dkr.ecr.ap-northeast-1.amazonaws.com/sample-rails
         ports:
           - containerPort: 3000
         command: ['/bin/sh', '-c', 'bundle exec puma -C config/puma.rb']
@@ -45,7 +43,6 @@ spec:
           - name: DB_DATABASE
             value: myapp
           - name: DB_HOST
-            value: sample-db.cmb2t0anuznk.ap-northeast-1.rds.amazonaws.com
             # value: [RDSのエンドポイント]
             # value: mysql-server
         volumeMounts:
@@ -54,7 +51,6 @@ spec:
 
       - name: nginx
         # image: [ECRのNginxイメージURL]
-        image: 945231564387.dkr.ecr.ap-northeast-1.amazonaws.com/sample-nginx
         ports:
           - containerPort: 80
         volumeMounts:
