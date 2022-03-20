@@ -30,21 +30,22 @@ spec:
 
       containers:
       - name: rails
+        image: 945231564387.dkr.ecr.ap-northeast-1.amazonaws.com/sample-rails
         # image: [ECRのRailsイメージURL]
         ports:
           - containerPort: 3000
         command: ['/bin/sh', '-c', 'bundle exec puma -C config/puma.rb']
         env:
           - name: DB_USERNAME
-            # value: root
-            value: admin
+            value: root
+            # value: admin
           - name: DB_PASSWORD
             value: password
           - name: DB_DATABASE
             value: myapp
           - name: DB_HOST
             # value: [RDSのエンドポイント]
-            # value: mysql-server
+            value: mysql-server
         volumeMounts:
         - name: tmp-data
           mountPath: /myapp/tmp/sockets
