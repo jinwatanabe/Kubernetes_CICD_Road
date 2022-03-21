@@ -30,7 +30,6 @@ spec:
 
       containers:
       - name: rails
-        image: 945231564387.dkr.ecr.ap-northeast-1.amazonaws.com/sample-rails
         # image: [ECRのRailsイメージURL]
         ports:
           - containerPort: 3000
