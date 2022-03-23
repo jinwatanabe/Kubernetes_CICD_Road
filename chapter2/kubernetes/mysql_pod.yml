@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-server
+spec:
+  type: ClusterIP
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+      protocol: TCP
+  selector:
+    app: mysql-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-server
+spec:
+  selector:
+    matchLabels:
+      app: mysql-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql-server
+    spec:
+      containers:
+        - image: mysql:5.7
+          name: mysql
+          resources:
+          env:
+            - name: MYSQL_PASSWORD
+              value: password
+            - name: MYSQL_USER
+              value: admin
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+            - name: LANG
+              value: C.UTF-8
+          ports:
+            - containerPort: 3306
+              name: mysql

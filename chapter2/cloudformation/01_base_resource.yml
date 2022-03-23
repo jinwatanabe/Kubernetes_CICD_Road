@@ -1,0 +1,153 @@
+Parameters:
+  ClusterBaseName:
+    Type: String
+    Default: eks-work
+
+  TargetRegion:
+    Type: String
+    Default: ap-northeast-1
+
+  AvailabilityZone1:
+    Type: String
+    Default: ap-northeast-1a
+
+  AvailabilityZone2:
+    Type: String
+    Default: ap-northeast-1c
+
+  VpcBlock:
+    Type: String
+    Default: 10.0.0.0/16
+
+  WorkerSubnet1Block:
+    Type: String
+    Default: 10.0.0.0/20
+
+  WorkerSubnet2Block:
+    Type: String
+    Default: 10.0.16.0/20
+
+  WorkerSubnet3Block:
+    Type: String
+    Default: 10.0.64.0/20
+
+  WorkerSubnet4Block:
+    Type: String
+    Default: 10.0.80.0/20
+
+Resources:
+  EksWorkVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: sample-vpc
+
+  WorkerSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone1
+      CidrBlock: !Ref WorkerSubnet1Block
+      VpcId: !Ref EksWorkVPC
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: sample-subnet-public01
+
+  WorkerSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone2
+      CidrBlock: !Ref WorkerSubnet2Block
+      VpcId: !Ref EksWorkVPC
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub sample-subnet-public02
+
+  WorkerSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone1
+      CidrBlock: !Ref WorkerSubnet3Block
+      VpcId: !Ref EksWorkVPC
+      Tags:
+        - Key: Name
+          Value: sample-subnet-private01
+
+  WorkerSubnet4:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone2
+      CidrBlock: !Ref WorkerSubnet4Block
+      VpcId: !Ref EksWorkVPC
+      Tags:
+        - Key: Name
+          Value: sample-subnet-private02
+  
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref EksWorkVPC
+
+  WorkerSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EksWorkVPC
+      Tags:
+        - Key: Name
+          Value: !Sub sample-rt-public
+
+  WorkerSubnetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref WorkerSubnetRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  WorkerSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnet1
+      RouteTableId: !Ref WorkerSubnetRouteTable
+
+  WorkerSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnet2
+      RouteTableId: !Ref WorkerSubnetRouteTable
+
+  SampleSgDb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: for rds
+      GroupName: sample-sg-db
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: sample-sg-db
+      VpcId: !Ref EksWorkVPC
+
+Outputs:
+  VPC:
+    Value: !Ref EksWorkVPC
+
+  WorkerSubnets:
+    Value: !Join
+      - ","
+      - [!Ref WorkerSubnet1, !Ref WorkerSubnet2]
+
+  RouteTable:
+    Value: !Ref WorkerSubnetRouteTable

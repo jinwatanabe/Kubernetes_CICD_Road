@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EksWorkVPC:
+    Type: AWS::EC2::VPC::Id
+  
+  PrivateSubnet01:
+    Type: AWS::EC2::Subnet::Id
+  
+  PrivateSubnet02:
+    Type: AWS::EC2::Subnet::Id
+  
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  # パラメータグループ
+  SampleDBPg:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Family: mysql8.0
+      Description: sample parameter group
+      Tags:
+        - Key: Name
+          Value: sample-db-pg
+  
+  # オプショングループ
+  # 削除の時エラーになる (個別削除が必要)
+  # SampleDBOg:
+  #   Type: AWS::RDS::OptionGroup
+  #   Properties:
+  #     EngineName: mysql
+  #     MajorEngineVersion: 8.0
+  #     OptionGroupDescription: sample option group
+  #     Tags: 
+  #       - Key: Name
+  #         Value: sample-db-og
+
+  # DBサブネットグループ
+  SampleDBSubnet: 
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupName: sample-db-subnet
+      DBSubnetGroupDescription: sample db subnet
+      SubnetIds: 
+        - !Ref PrivateSubnet01
+        - !Ref PrivateSubnet02
+
+  #  DB
+  SampleDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage : 20
+      DBInstanceClass: db.t2.micro
+      Port: 3306
+      StorageType: gp2
+      BackupRetentionPeriod: 7
+      MasterUsername: admin
+      MasterUserPassword: password
+      DBInstanceIdentifier: sample-db
+      Engine: mysql
+      EngineVersion: 8.0.23
+      DBSubnetGroupName: !Ref SampleDBSubnet
+      DBParameterGroupName: !Ref SampleDBPg
+      # OptionGroupName: !Ref SampleDBOg
+      MultiAZ: true
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+
+Outputs:
+  RDSEndpoint:
+    Value: !GetAtt SampleDB.Endpoint.Address
