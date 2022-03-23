@@ -45,17 +45,17 @@ spec:
           - name: DB_DATABASE
             value: myapp
           - name: DB_HOST
-            value: sample-db.cmb2t0anuznk.ap-northeast-1.rds.amazonaws.com
+            value: [RDSのエンドポイント]
             # value: mysql-server
           - name: SECRET_KEY_BASE
-            value: b8c1125c6430503e6062ae6c4fcccf69
+            value: [master.keyの値]
         volumeMounts:
         - name: tmp-data
           mountPath: /myapp/tmp/sockets
 
       - name: nginx
         # image: [ECRのNginxイメージURL]
-        image: 945231564387.dkr.ecr.ap-northeast-1.amazonaws.com/sample-nginx
+        image: [アカウントID].dkr.ecr.ap-northeast-1.amazonaws.com/sample-nginx
         ports:
           - containerPort: 80
         volumeMounts:

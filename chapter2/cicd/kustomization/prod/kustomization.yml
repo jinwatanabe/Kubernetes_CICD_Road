@@ -7,4 +7,4 @@ bases:
 images:
   - name: rails-image # ここは変更しない
     newTag: 0.1.1 # アプリケーションのバージョン番号(ここをgit pushする前に毎回変更することでECRのタグになり、applyでイメージ変更することができる)
-    newName: 945231564387.dkr.ecr.ap-northeast-1.amazonaws.com/sample-rails # ECRレジストリのURI
+    newName: [アカウントID].dkr.ecr.ap-northeast-1.amazonaws.com/sample-rails # ECRレジストリのURI
