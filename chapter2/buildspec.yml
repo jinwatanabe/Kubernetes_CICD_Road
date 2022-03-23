@@ -13,15 +13,22 @@ phases:
       - docker tag $AWS_ECR_BUILD_REPOSITORY:latest build:latest
 
       - IMAGE_TAG=$(echo ${CODEBUILD_RESOLVED_SOURCE_VERSION} | head -c 7)
+      - IMAGE_NAME=sample-railis
 
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build --target production --cache-from build:latest --build-arg SECRET_KEY_BASE=$SECRET_KEY_BASE --build-arg BUILDKIT_INLINE_CACHE=1 -t $IMAGE_NAME:$IMAGE_TAG .
-      - docker build --target build --cache-from build:latest --build-arg SECRET_KEY_BASE=$SECRET_KEY_BASE --build-arg BUILDKIT_INLINE_CACHE=1 -t build:latest .
-      - docker tag $IMAGE_NAME:$IMAGE_TAG $AWS_ECR_BUILD_REPOSITORY:$IMAGE_TAG
-      - docker tag $IMAGE_NAME:$IMAGE_TAG $AWS_ECR_BUILD_REPOSITORY:staging
+      - docker build --target production --cache-from build:latest --build-arg BUILDKIT_INLINE_CACHE=1 -t $IMAGE_NAME:$IMAGE_TAG .
+      - docker build --target build --cache-from build:latest --build-arg BUILDKIT_INLINE_CACHE=1 -t build:latest .
+      # - docker tag $IMAGE_NAME:$IMAGE_TAG $AWS_ECR_BUILD_REPOSITORY:$IMAGE_TAG
+
+      # install yq
+      - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+      - chmod a+x /usr/local/bin/yq
+      - VERSION_NO=`cat cicd/kustomization/prod/kustomization.yml |  yq .images[].newTag`
+
+      - docker tag $IMAGE_NAME:$IMAGE_TAG $AWS_ECR_BUILD_REPOSITORY:$VERSION_NO
       - docker tag build:latest $AWS_ECR_BUILD_REPOSITORY:latest
 
   post_build:
@@ -30,8 +37,8 @@ phases:
       - echo Pushing the Docker image...
       - docker images
       - docker push $AWS_ECR_BUILD_REPOSITORY:latest
-      - docker push $AWS_ECR_BUILD_REPOSITORY:$IMAGE_TAG
-      - docker push $AWS_ECR_BUILD_REPOSITORY:staging
+      # - docker push $AWS_ECR_BUILD_REPOSITORY:$IMAGE_TAG
+      - docker push $AWS_ECR_BUILD_REPOSITORY:$VERSION_NO
       - echo "[{\"name\":\"sample-rails\",\"imageUri\":\"${AWS_ECR_BUILD_REPOSITORY}:${IMAGE_TAG}\"}]" > imagedefinitions.json
 
 artifacts:
